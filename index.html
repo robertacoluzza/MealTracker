@@ -1,0 +1,321 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="theme-color" content="#5b3fd1">
+<title>MealTracker | I pasti dei bambini</title>
+<meta name="description" content="La settimana tipo dei pasti dei bambini: pranzo al nido, cena a casa e un colpo d'occhio su cosa manca.">
+<style>
+:root{
+  --bg:#faf8fe;--card:#fff;--ink:#241c3a;--muted:#6b6585;--line:#e4def3;
+  --primary:#5b3fd1;--primary-soft:#efeafc;--ok:#2f855a;--warn:#b7791f;
+  --tone0:#fdecef;--tone1:#eaf2fd;--tone2:#e8f5e4;--tone3:#fdf1d8;
+}
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:"Avenir Next","Segoe UI",system-ui,Roboto,Helvetica,Arial,sans-serif;background:var(--bg);color:var(--ink);line-height:1.45}
+button,input{font:inherit;color:inherit}
+button{cursor:pointer}
+:focus-visible{outline:3px solid var(--primary);outline-offset:2px;border-radius:8px}
+#app{max-width:520px;margin:0 auto;padding:20px 16px 96px;display:flex;flex-direction:column;gap:16px}
+h1{font-size:1.7rem;line-height:1.2}
+h2{font-size:1.05rem}
+.sub{color:var(--muted);font-size:.95rem}
+.top{display:flex;justify-content:space-between;align-items:flex-start;gap:12px}
+.plus{width:42px;height:42px;border-radius:50%;border:none;background:var(--primary-soft);color:var(--primary);font-size:1.6rem;line-height:1}
+.seg{display:flex;border:1px solid var(--line);border-radius:999px;padding:3px;background:#fff}
+.seg button{flex:1;border:none;background:none;border-radius:999px;padding:8px;color:var(--muted)}
+.seg button[aria-pressed="true"]{background:var(--primary);color:#fff;font-weight:600}
+
+.kcard{border:1px solid var(--line);border-radius:16px;background:var(--card);overflow:hidden}
+.khead{display:flex;align-items:center;gap:12px;width:100%;border:none;text-align:left;padding:14px}
+.avatar{width:46px;height:46px;border-radius:50%;background:#fff;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:1.2rem;color:var(--primary);border:2px solid #fff;flex:none}
+.khead .nm{flex:1;min-width:0}
+.khead strong{display:block;font-size:1.05rem}
+.khead span.s{color:var(--muted);font-size:.88rem}
+.chev{font-size:1.4rem;color:var(--muted)}
+
+.grid{display:grid;grid-template-columns:62px repeat(7,1fr);gap:6px;align-items:center;padding:12px 14px 14px}
+.grid .dh{font-size:.68rem;color:var(--muted);text-align:center}
+.grid .rl{font-size:.78rem;color:var(--muted)}
+.cell{aspect-ratio:1;max-width:44px;width:100%;margin:0 auto;border-radius:50%;border:1px solid var(--line);background:#fff;display:flex;align-items:center;justify-content:center;font-size:1.05rem;padding:0}
+.cell.empty{background:transparent;border-style:dashed;color:var(--muted)}
+.big .cell{font-size:1.35rem}
+button.cell:hover{background:var(--primary-soft)}
+
+.sugg{border-radius:16px;padding:16px;display:flex;align-items:center;justify-content:space-between;gap:12px}
+.sugg .k{font-size:.88rem;color:var(--muted)}
+.sugg .first{font-size:1.6rem;font-weight:700;line-height:1.2}
+.sugg .alt{font-size:.95rem}
+.sugg .ico{font-size:2.6rem}
+.sugg.pink{background:var(--tone0)}
+.sugg.lav{background:var(--primary-soft)}
+
+.panel{background:var(--card);border:1px solid var(--line);border-radius:16px}
+.panel.pad{padding:14px}
+.panel h2{margin-bottom:10px}
+.counters{display:flex;flex-wrap:wrap;gap:8px;list-style:none}
+.cnt{border:1px solid var(--line);border-radius:999px;padding:5px 11px;font-size:.88rem;background:#fff}
+.cnt.done{border-color:var(--ok);color:var(--ok)}
+.cnt.over{border-color:var(--warn);color:var(--warn)}
+details.panel summary{padding:14px;cursor:pointer;font-weight:600}
+.goals{padding:0 14px 14px;display:flex;flex-direction:column;gap:8px}
+.goal{display:flex;align-items:center;gap:10px}
+.goal .nm{flex:1}
+.goal button{width:32px;height:32px;border-radius:50%;border:1px solid var(--line);background:#fff;font-size:1.1rem}
+.goal output{width:22px;text-align:center;font-weight:700}
+.note{color:var(--muted);font-size:.85rem}
+
+.back{border:none;background:none;color:var(--primary);font-weight:600;padding:4px 0;align-self:flex-start}
+.list{list-style:none}
+.list li{display:flex;align-items:center;gap:12px;padding:12px 14px;border-top:1px solid var(--line)}
+.list li:first-child{border-top:none}
+.list .nm{flex:1;min-width:0}
+.list .ic{font-size:1.5rem;width:36px;text-align:center}
+.lock{color:var(--muted);font-size:.9rem}
+.mini{border:1px solid var(--line);background:#fff;border-radius:8px;padding:6px 10px;font-size:.88rem}
+.mini.danger{color:#b42318;border-color:#f0c9c5}
+.form{display:flex;gap:8px;padding:14px;flex-wrap:wrap}
+.form input{flex:1;min-width:120px;border:1px solid var(--line);border-radius:10px;padding:9px 11px}
+.form input.emo{flex:0 0 64px;min-width:64px;text-align:center}
+.form button{border:none;background:var(--primary);color:#fff;border-radius:10px;padding:9px 16px;font-weight:600}
+.icons{flex-basis:100%;display:grid;grid-template-columns:repeat(auto-fill,minmax(46px,1fr));gap:6px}
+.form .icons button{aspect-ratio:1;border:1px solid var(--line);background:#fff;border-radius:12px;font-size:1.4rem;padding:0;color:inherit;font-weight:400}
+.form .icons button[aria-pressed="true"]{background:var(--primary-soft);border-color:var(--primary);box-shadow:0 0 0 2px var(--primary)}
+.info{background:var(--tone2);border-radius:14px;padding:14px;font-size:.92rem}
+.info strong{display:block;margin-bottom:4px}
+.linkbtn{border:none;background:none;color:var(--muted);text-decoration:underline;padding:6px 0;align-self:flex-start}
+
+.tabs{position:fixed;left:0;right:0;bottom:0;background:#fff;border-top:1px solid var(--line);z-index:5}
+.tabs .in{max-width:520px;margin:0 auto;display:flex}
+.tabs button{flex:1;border:none;background:none;padding:10px 0 12px;color:var(--muted);display:flex;flex-direction:column;align-items:center;gap:2px;font-size:.78rem}
+.tabs button span{font-size:1.4rem;line-height:1}
+.tabs button[aria-current="page"]{color:var(--primary);font-weight:700}
+
+dialog{border:none;border-radius:18px;padding:20px;width:min(420px,92vw);margin:auto;box-shadow:0 20px 60px rgba(30,20,60,.3)}
+dialog::backdrop{background:rgba(30,20,60,.5)}
+dialog h2{margin-bottom:12px}
+.picks{display:grid;grid-template-columns:1fr 1fr;gap:8px;margin-bottom:14px}
+.pick{display:flex;align-items:center;gap:8px;border:1px solid var(--line);background:#fff;border-radius:12px;padding:10px;text-align:left;font-weight:600}
+.pick:hover{background:var(--primary-soft)}
+.pick span{font-size:1.4rem}
+.dact{display:flex;justify-content:space-between}
+dialog label{display:block;font-size:.88rem;color:var(--muted);margin:8px 0 4px}
+dialog input{width:100%;border:1px solid var(--line);border-radius:10px;padding:9px 11px}
+@media (prefers-reduced-motion:reduce){*{transition:none!important}}
+</style>
+</head>
+<body>
+<main id="app"></main>
+
+<nav class="tabs" aria-label="Navigazione principale"><div class="in" id="tabs"></div></nav>
+
+<dialog id="dlgPick"></dialog>
+<dialog id="dlgKid">
+  <h2>Aggiungi un bambino</h2>
+  <form id="kidForm">
+    <label for="kName">Nome</label>
+    <input id="kName" maxlength="20" required>
+    <label for="kSchool">Scuola (facoltativo)</label>
+    <input id="kSchool" maxlength="30" placeholder="Per esempio: Asilo nido">
+    <div class="dact" style="margin-top:16px">
+      <button class="mini" type="button" id="kCancel">Annulla</button>
+      <button class="mini" type="submit" style="background:var(--primary);color:#fff;border-color:var(--primary)">Aggiungi</button>
+    </div>
+  </form>
+</dialog>
+
+<script>
+const STD=[
+  {id:'carne-bianca',name:'Carne bianca',icon:'🍗',t:2},
+  {id:'carne-rossa',name:'Carne rossa',icon:'🥩',t:1},
+  {id:'pesce',name:'Pesce',icon:'🐟',t:2},
+  {id:'uova',name:'Uova',icon:'🥚',t:1},
+  {id:'latticini',name:'Latticini',icon:'🧀',t:1},
+  {id:'legumi',name:'Legumi',icon:'🫘',t:3}
+];
+const ICONS=['🥣','🍞','🍝','🍚','🌾','🦐','🦪','🐙','🥦','🥕','🥬','🍅','🥔','🌽','🍄','🍎','🍌','🍇','🥜','🥛','🍲','🍕','🍪','🍽️'];
+const OTHER={id:'altro',name:'Altro (non conta)',icon:'🍽️',t:0};
+const DAYS=['Lun','Mar','Mer','Gio','Ven','Sab','Dom'];
+const DAYFULL=['lunedì','martedì','mercoledì','giovedì','venerdì','sabato','domenica'];
+const SLOTS=[{id:'p',label:'Pranzo',icon:'☀️'},{id:'c',label:'Cena',icon:'🌙'}];
+const KEY='mealtracker-v2';
+
+function demo(){
+  const m=l=>{const o={};l.forEach(([d,s,c])=>o[d+'|'+s]=c);return o};
+  return {nextId:3,custom:[],kids:[
+    {id:1,name:'Anna',school:"Scuola dell'infanzia",targets:{},meals:m([
+      [0,'p','carne-bianca'],[1,'p','pesce'],[2,'p','uova'],[3,'p','latticini'],[4,'p','legumi'],
+      [0,'c','legumi'],[1,'c','carne-rossa'],[2,'c','altro'],[3,'c','carne-bianca']])},
+    {id:2,name:'Alessio',school:'Scuola primaria',targets:{},meals:m([
+      [0,'p','legumi'],[1,'p','pesce'],[2,'p','uova'],[3,'p','carne-rossa'],[4,'p','pesce'],[5,'p','legumi'],
+      [0,'c','carne-rossa'],[1,'c','legumi'],[2,'c','pesce'],[3,'c','legumi'],[4,'c','uova']])}
+  ]};
+}
+function load(){try{const t=localStorage.getItem(KEY);if(t)return JSON.parse(t)}catch(e){}return demo()}
+function save(){try{localStorage.setItem(KEY,JSON.stringify(S))}catch(e){}}
+let S=load();
+const ui={view:'home',child:null,filter:'tutti'};
+
+const cats=()=>[...STD,...S.custom.map(c=>({...c,t:1}))];
+const catOf=id=>cats().find(c=>c.id===id)||OTHER;
+const target=(k,c)=>k.targets[c.id]??c.t;
+const kidById=id=>S.kids.find(k=>k.id===id);
+const tones=['var(--tone0)','var(--tone1)','var(--tone2)','var(--tone3)'];
+
+function h(tag,p,...kids){
+  const e=document.createElement(tag);
+  for(const k in (p||{})){const v=p[k];
+    if(k==='class')e.className=v;
+    else if(k==='style')e.style.cssText=v;
+    else if(k.startsWith('on'))e[k]=v;
+    else e.setAttribute(k,v)}
+  kids.flat().forEach(c=>{if(c!=null&&c!==false)e.append(c.nodeType?c:document.createTextNode(c))});
+  return e;
+}
+
+function counts(k){const c={};Object.values(k.meals).forEach(id=>c[id]=(c[id]||0)+1);return c}
+function missingFor(kids){
+  const left={};
+  kids.forEach(k=>{const c=counts(k);cats().forEach(cat=>{
+    const l=target(k,cat)-(c[cat.id]||0);if(l>0)left[cat.id]=(left[cat.id]||0)+l})});
+  return cats().filter(c=>left[c.id]).map(c=>({cat:c,left:left[c.id]})).sort((a,b)=>b.left-a.left);
+}
+function suggestion(kids,cls,label){
+  const m=missingFor(kids);
+  if(!m.length)return h('div',{class:'sugg '+cls},h('div',{},h('div',{class:'k'},label),h('div',{class:'first'},'Obiettivi raggiunti')),h('div',{class:'ico','aria-hidden':'true'},'🎉'));
+  return h('div',{class:'sugg '+cls},
+    h('div',{},h('div',{class:'k'},label),h('div',{class:'first'},m[0].cat.name),
+      m[1]&&h('div',{class:'alt'},'Oppure: ',h('strong',{},m[1].cat.name))),
+    h('div',{class:'ico','aria-hidden':'true'},m[0].cat.icon,m[1]?m[1].cat.icon:''));
+}
+
+function grid(k,rows,big,onCell){
+  const g=h('div',{class:'grid'+(big?' big':'')},h('span'),DAYS.map(d=>h('span',{class:'dh'},d)));
+  rows.forEach(s=>{
+    g.append(h('span',{class:'rl'},s.icon+' '+s.label));
+    DAYS.forEach((d,i)=>{
+      const id=k.meals[i+'|'+s.id],c=id&&catOf(id);
+      const lab=s.label+', '+DAYFULL[i]+': '+(c?c.name:'vuoto');
+      if(onCell)g.append(h('button',{class:'cell'+(c?'':' empty'),'aria-label':lab,title:c?c.name:'Aggiungi',onclick:()=>openPick(k,i,s)},c?c.icon:'+'));
+      else g.append(h('span',{class:'cell'+(c?'':' empty'),'aria-label':lab},c?c.icon:'–'));
+    });
+  });
+  return g;
+}
+
+function viewHome(){
+  const rows=ui.filter==='tutti'?SLOTS:SLOTS.filter(s=>s.id===ui.filter);
+  return [
+    h('header',{class:'top'},h('div',{},h('h1',{},'I miei bambini'),h('p',{class:'sub'},'Panoramica della settimana tipo')),
+      h('button',{class:'plus','aria-label':'Aggiungi un bambino',onclick:()=>openKid()},'+')),
+    h('div',{class:'seg',role:'group','aria-label':'Mostra'},
+      [['p','Pranzo'],['c','Cena'],['tutti','Tutti']].map(([v,l])=>h('button',{'aria-pressed':ui.filter===v,onclick:()=>{ui.filter=v;render()}},l))),
+    S.kids.length?S.kids.map((k,i)=>h('section',{class:'kcard'},
+      h('button',{class:'khead',style:'background:'+tones[i%4],onclick:()=>go('child',k.id)},
+        h('span',{class:'avatar','aria-hidden':'true'},k.name[0].toUpperCase()),
+        h('span',{class:'nm'},h('strong',{},k.name),k.school&&h('span',{class:'s'},k.school)),
+        h('span',{class:'chev','aria-hidden':'true'},'›')),
+      grid(k,rows,false))):h('p',{class:'sub'},'Nessun bambino: tocca + per aggiungerne uno.'),
+    S.kids.length>0&&suggestion(S.kids,'lav','Suggerimento per tutti')
+  ];
+}
+
+function viewChild(){
+  const k=kidById(ui.child);if(!k){ui.view='home';return viewHome()}
+  const c=counts(k);
+  return [
+    h('button',{class:'back',onclick:()=>go('home')},'‹ Torna ai bambini'),
+    h('header',{},h('h1',{},k.name),k.school&&h('p',{class:'sub'},k.school)),
+    suggestion([k],'pink','Da mettere nelle caselle vuote'),
+    h('section',{class:'panel'},h('div',{style:'padding:14px 14px 0'},h('h2',{},'La settimana tipo di '+k.name),h('p',{class:'note'},'Tocca una casella per scegliere il pasto. Si salva da sola.')),grid(k,SLOTS,true,true)),
+    h('section',{class:'panel pad'},h('h2',{},'Proteine della settimana'),
+      h('ul',{class:'counters'},cats().map(cat=>{
+        const n=c[cat.id]||0,t=target(k,cat);
+        return h('li',{class:'cnt'+(n>t?' over':n===t&&t>0?' done':'')},cat.icon+' '+cat.name+' '+n+'/'+t)}))),
+    h('details',{class:'panel'},h('summary',{},'Obiettivi settimanali di '+k.name),
+      h('div',{class:'goals'},cats().map(cat=>{
+        const out=h('output',{},String(target(k,cat)));
+        const step=d=>()=>{const v=Math.max(0,Math.min(14,target(k,cat)+d));k.targets[cat.id]=v;save();render();};
+        return h('div',{class:'goal'},h('span',{'aria-hidden':'true'},cat.icon),h('span',{class:'nm'},cat.name),
+          h('button',{'aria-label':'Meno '+cat.name,onclick:step(-1)},'−'),out,
+          h('button',{'aria-label':'Più '+cat.name,onclick:step(1)},'+'))}),
+        h('p',{class:'note'},'Valori di esempio: confrontali con le indicazioni del pediatra o del nido.')))
+  ];
+}
+
+function viewKids(){
+  return [
+    h('header',{},h('h1',{},'Bambini'),h('p',{class:'sub'},'Aggiungi, apri o elimina un profilo')),
+    h('section',{class:'panel'},
+      S.kids.length?h('ul',{class:'list'},S.kids.map(k=>h('li',{},
+        h('span',{class:'nm'},h('strong',{},k.name),k.school&&h('div',{class:'sub'},k.school)),
+        h('button',{class:'mini',onclick:()=>go('child',k.id)},'Apri'),
+        h('button',{class:'mini danger',onclick:()=>{if(confirm('Eliminare '+k.name+' e la sua settimana?')){S.kids=S.kids.filter(x=>x.id!==k.id);save();render()}}},'Elimina')))):h('p',{class:'sub',style:'padding:14px'},'Nessun bambino.'),
+      h('div',{class:'form'},h('button',{type:'button',onclick:()=>openKid()},'Aggiungi un bambino'))),
+    h('button',{class:'linkbtn',onclick:()=>{if(confirm('Sostituire tutti i dati con quelli di esempio?')){try{localStorage.removeItem(KEY)}catch(e){}S=demo();render()}}},'Ripristina i dati di esempio')
+  ];
+}
+
+function viewCats(){
+  const name=h('input',{placeholder:'Nome della categoria','aria-label':'Nome della nuova categoria',maxlength:'20'});
+  let icon=ICONS[0];
+  const picker=h('div',{class:'icons',role:'group','aria-label':"Scegli un'icona"},ICONS.map(i=>
+    h('button',{type:'button','aria-pressed':i===icon,'aria-label':'Icona '+i,onclick:e=>{
+      icon=i;picker.querySelectorAll('button').forEach(b=>b.setAttribute('aria-pressed',b===e.currentTarget))}},i)));
+  const add=()=>{const n=name.value.trim();if(!n)return;
+    S.custom.push({id:'c'+(S.nextId++),name:n,icon});save();render()};
+  return [
+    h('header',{},h('h1',{},'Categorie alimentari')),
+    h('section',{},h('h2',{style:'margin-bottom:8px'},'Categorie standard'),
+      h('div',{class:'panel'},h('ul',{class:'list'},STD.map(c=>h('li',{},h('span',{class:'ic','aria-hidden':'true'},c.icon),h('span',{class:'nm'},c.name),h('span',{class:'lock'},'🔒 fissa')))))),
+    h('section',{},h('h2',{style:'margin-bottom:8px'},'Le mie categorie'),
+      h('div',{class:'panel'},
+        S.custom.length?h('ul',{class:'list'},S.custom.map(c=>h('li',{},h('span',{class:'ic','aria-hidden':'true'},c.icon),h('span',{class:'nm'},c.name),
+          h('button',{class:'mini danger',onclick:()=>{if(confirm('Eliminare '+c.name+'? Verrà tolta anche dai pasti.')){
+            S.custom=S.custom.filter(x=>x.id!==c.id);S.kids.forEach(k=>{for(const key in k.meals)if(k.meals[key]===c.id)delete k.meals[key]});save();render()}}},'Elimina')))):
+          h('p',{class:'sub',style:'padding:14px'},'Nessuna categoria aggiunta.'),
+        h('div',{class:'form'},name,h('button',{type:'button',onclick:add},'Aggiungi'),h('p',{class:'note',style:'flex-basis:100%'},"Scegli un'icona"),picker))),
+    h('div',{class:'info'},h('strong',{},'Come funzionano'),'Le categorie standard non si possono eliminare. Quelle aggiunte da te compaiono nella scelta dei pasti, con un obiettivo di 1 a settimana che puoi cambiare per ogni bambino.')
+  ];
+}
+
+const VIEWS={home:viewHome,child:viewChild,kids:viewKids,cats:viewCats};
+function go(v,id){ui.view=v;ui.child=id??null;render();window.scrollTo(0,0)}
+function render(){
+  document.getElementById('app').replaceChildren(...VIEWS[ui.view]().flat().filter(Boolean));
+  const active=ui.view==='child'?'home':ui.view;
+  const tabs=document.getElementById('tabs');tabs.replaceChildren(
+    ...[['home','🏠','Home'],['kids','🧒','Bambini'],['cats','🍴','Categorie']].map(([v,i,l])=>
+      h('button',{'aria-current':active===v?'page':'false',onclick:()=>go(v)},h('span',{'aria-hidden':'true'},i),l)));
+}
+
+/* Scelta del pasto */
+const dlgPick=document.getElementById('dlgPick');
+function openPick(k,d,s){
+  const key=d+'|'+s.id,cur=k.meals[key];
+  const set=id=>{if(id)k.meals[key]=id;else delete k.meals[key];save();dlgPick.close();render()};
+  dlgPick.replaceChildren(
+    h('h2',{},s.label+', '+DAYFULL[d]+' ('+k.name+')'),
+    h('div',{class:'picks'},[...cats(),OTHER].map(c=>h('button',{class:'pick',onclick:()=>set(c.id)},h('span',{'aria-hidden':'true'},c.icon),c.name))),
+    h('div',{class:'dact'},cur?h('button',{class:'mini',onclick:()=>set(null)},'Svuota'):h('span'),h('button',{class:'mini',onclick:()=>dlgPick.close()},'Chiudi')));
+  dlgPick.showModal();
+}
+dlgPick.addEventListener('click',e=>{if(e.target===dlgPick)dlgPick.close()});
+
+/* Aggiunta di un bambino */
+const dlgKid=document.getElementById('dlgKid');
+function openKid(){document.getElementById('kidForm').reset();dlgKid.showModal()}
+document.getElementById('kCancel').onclick=()=>dlgKid.close();
+dlgKid.addEventListener('click',e=>{if(e.target===dlgKid)dlgKid.close()});
+document.getElementById('kidForm').onsubmit=e=>{
+  e.preventDefault();
+  const n=document.getElementById('kName').value.trim();if(!n)return;
+  const k={id:S.nextId++,name:n,school:document.getElementById('kSchool').value.trim(),targets:{},meals:{}};
+  S.kids.push(k);save();dlgKid.close();go('child',k.id);
+};
+
+render();
+</script>
+</body>
+</html>
